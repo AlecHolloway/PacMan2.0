@@ -20,6 +20,7 @@ int *getNewLocation(int direction, int *pacmanPtr);
 int getRow(int Board[][COLUMNS], int* tile);
 int getCol(int Board[][COLUMNS], int* tile);
 int *emptyAndMovePacMan(int *newLocation, int *pacmanPtr);
+int *swapGhostPacman(int *newLocation, int *pacmanPtr);
 //int *moveBlinky();
 //int *movePinky();
 //int *moveClyde();

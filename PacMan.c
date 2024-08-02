@@ -74,15 +74,16 @@ int main() {
     while(game == true) {
         printBoard(Board);
         int direction = getUserInput();
-        //if direction does not equal q,a,s,d,w then ask again
-        if((direction != 113) && (direction != 97) && (direction != 115) && (direction != 100) && (direction != 119)) {
-            direction = getUserInput();
-        }
-        else if(direction == 'q') {
+        if(direction == 'q') {
             //displayQueue(Frontier);
             free(Frontier);
             exit(1);
         }
+        //if direction does not equal q,a,s,d,w then ask again
+        while ((direction != 113) && (direction != 97) && (direction != 115) && (direction != 100) && (direction != 119)) {
+            direction = getUserInput();
+        }
+        
         int *newLocation = getNewLocation(direction, pacmanPtr);
         if(*newLocation == WALL) {
             continue;
@@ -96,18 +97,15 @@ int main() {
         else if((*newLocation == INKY) || (*newLocation == BLINKY) || (*newLocation == PINKY) || (*newLocation == CLYDE)) {
             handleGhostEncounter();
             switch(*newLocation) {
-                case(INKY) {
+                case(INKY):
                     inkyPtr = swapGhostPacman(newLocation, pacmanPtr);
-                }
-                case(BLINKY) {
+                case(BLINKY):
                     blinkyPtr = swapGhostPacman(newLocation, pacmanPtr);
-                }
-                case(PINKY) {
+                case(PINKY):
                     pinkyPtr = swapGhostPacman(newLocation, pacmanPtr);
-                }
-                case(CLYDE) {
+                case(CLYDE):
                     clydePtr = swapGhostPacman(newLocation, pacmanPtr);
-                }
+                break;
             } 
         }
         //GHOST MOVEMENT STARTS HERE
@@ -174,9 +172,7 @@ int main() {
 
 int getUserInput() {
     int c;
-    //while ((c = getchar()) != '\n' && c != EOF) { } //clears standard in buffer
-    while ((getchar()) != '\n');
-    c = fgetc(stdin);
+    c = getchar();
     return c;
 }
 
@@ -185,18 +181,9 @@ void printBoard(int Board[][COLUMNS]) {
     system("clear"); 
     for(int x = 0; x < ROWS; x++) {
         for(int y = 0; y < COLUMNS; y++) {
-            if(Board[x][y] == 0) {
-                printf(" \t");
-            }
-            else if(Board[x][y] == 3) {
-               printf(".\t");
-            }
-            else {
-                printf("%d\t", Board[x][y]);
-            }
+            printf("%d\t", Board[x][y]);
         }
-
-     printf("\n");
+        printf("\n");
     }
 }
 
