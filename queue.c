@@ -6,38 +6,8 @@ void initQ(struct queue *q) {
     q->head = NULL;
     q->tail = NULL;
 }
-//struct queue *enqueue(struct queue *q, int *location, int currentRow, int currentCol) {
-//    struct node *newnode = (struct node*)malloc(sizeof(struct node)); 
-//    if(newnode == NULL) { 
-//        fprintf(stderr, "Memory allocation for newnode has failed");
-//    }
-//    if(q->head == NULL) {
-//        q->head = newnode;
-//        q->head->data = *location;
-//        q->head->next = NULL; 
-//        q->head->row = currentRow; 
-//        q->head->column = currentCol;
-//        q->tail = q->head;
-//        return q;
-//    }
-//    else {
-//        struct node* tmp = q->head;
-//        while(tmp->next != NULL) {
-//            tmp = tmp->next;
-//        }
-//        tmp->next = newnode;
-//        tmp->next->data = *location;
-//        tmp->next->next = NULL;
-//        tmp->next->row = currentRow;
-//        tmp->next->column = currentCol;
-//        q->tail = tmp->next;
-//        return q;
-//    }
-//
-//}
 
-
-struct queue *enqueue(struct queue *q, int *location) {
+struct queue *enqueue(struct queue *q, int *location, int row, int column) {
     struct node *newnode = (struct node*)malloc(sizeof(struct node)); 
     if(newnode == NULL) { 
         fprintf(stderr, "Memory allocation for newnode has failed");
@@ -45,7 +15,9 @@ struct queue *enqueue(struct queue *q, int *location) {
     if(q->head == NULL) {
         q->head = newnode;
         q->head->data = *location;
-        q->head->next = NULL; 
+        q->head->next = NULL;
+        q->head->row = row; 
+        q->head->column = column; 
         q->tail = q->head;
         return q;
     }
@@ -56,6 +28,8 @@ struct queue *enqueue(struct queue *q, int *location) {
         }
         tmp->next = newnode;
         tmp->next->data = *location;
+        tmp->next->row = row;
+        tmp->next->column = column;
         tmp->next->next = NULL;
         q->tail = tmp->next;
         return q;

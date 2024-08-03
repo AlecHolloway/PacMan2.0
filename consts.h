@@ -10,3 +10,4 @@
 #define BLINKY 6
 #define CLYDE 7
 #define PINKY 8
+#define GHOST (INKY | BLINKY | CLYDE | PINKY)

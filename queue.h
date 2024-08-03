@@ -15,8 +15,8 @@ struct queue {
 };
 
 void initQ(struct queue *);
-//struct queue *enqueue(struct queue *q, int *location, int currentRow, int currentCol);
-struct queue *enqueue(struct queue *q, int *location);
+
+struct queue *enqueue(struct queue *q, int *location, int row, int column);
 struct queue *dequeue(struct queue *);
 void displayQueue(struct queue *);
 #endif

@@ -6,7 +6,7 @@
 #include "myfunctions.h"
 #include "queue.h"
 #include<string.h>
-
+#include <stddef.h>
 struct playerStats {
     int lives;
     int score;
@@ -15,6 +15,7 @@ struct playerStats {
 
 static struct playerStats player;  //static global variable is seen only in the file
 
+    
 int main() {
     int Board[ROWS][COLUMNS] =                                    
     {
@@ -35,7 +36,7 @@ int main() {
         {1, 1, 1, 3, 3, 1, 3, 3, 3, 3, 3, 3, 1, 3, 1, 3, 1, 1, 3, 1},
         {1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 3, 3, 3, 3, 1},
         {1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1},
-        {1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1},
+        {1, 0, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
@@ -68,8 +69,6 @@ int main() {
         exit(EXIT_FAILURE);
     }
     initQ(Frontier);
-    bool vis[ROWS][COLUMNS];
-    memset(vis, false, sizeof vis);
   
     while(game == true) {
         printBoard(Board);
@@ -88,12 +87,15 @@ int main() {
         if(*newLocation == WALL) {
             continue;
         }
+        
         else if((*newLocation == PELLET) || (*newLocation == EMPTY)) {
            pacmanPtr = emptyAndMovePacMan(newLocation, pacmanPtr);
         }
+        
         else if(*newLocation = POWERPELLET) {
            pacmanPtr = emptyAndMovePacMan(newLocation, pacmanPtr);
            handlePowerUp(player); }
+        
         else if((*newLocation == INKY) || (*newLocation == BLINKY) || (*newLocation == PINKY) || (*newLocation == CLYDE)) {
             handleGhostEncounter();
             switch(*newLocation) {
@@ -109,31 +111,54 @@ int main() {
             } 
         }
         //GHOST MOVEMENT STARTS HERE
-        //WORKING IN A SIMPLE PARADIGM 
-        enqueue(Frontier, inkyPtr);
-        //explore root node
-        if(Frontier->head->data == PACMAN) {
-            handleGhostEncounter();
-        }
-        else if(Frontier->head->data == WALL) {
-            continue;
-        }
-        else if(Frontier->head->data == CLYDE) {
-            continue;
-        }
-        else if((Frontier->head->data == PELLET) || (Frontier->head->data == POWERPELLET)){
-             
-            continue;
-        } 
-        vis[getRow(Board, inkyPtr)][getCol(Board, inkyPtr)] = 1;  
-        dequeue(Frontier);        
-        enqueue(Frontier, inkyPtr - 1);
-        enqueue(Frontier, inkyPtr + 20);
-        enqueue(Frontier, inkyPtr + 1);
-        enqueue(Frontier, inkyPtr - 20);
-
+        
         //add adjacent nodes to queue in order of left, up, down, right
-        //explore
+        addToQueue(inkyPtr, Frontier, boardPtr);
+        //add current index to visited
+        
+        //start of Recursion
+        //check first queue element
+        int nextIndex = Frontier->head->data;
+        int nextRow = Frontier->head->row;
+        int nextCol = Frontier->head->column;
+        
+        switch(nextIndex) {
+            case WALL:
+                dequeue(Frontier);
+                break;
+            case PELLET:
+                //save pellet info
+                Board[nextRow][nextCol] = *inkyPtr;
+                inkyPtr = &Board[nextRow][nextCol];
+                dequeue(Frontier);
+                addToQueue(inkyPtr, Frontier, boardPtr);
+                break;
+            case GHOST:
+                dequeue(Frontier);
+                break;
+            case PACMAN:
+                exit(1);
+            case EMPTY:
+                *inkyPtr = 0;
+                Board[nextRow][nextCol] = *inkyPtr;
+                inkyPtr = &Board[nextRow][nextCol];
+                dequeue(Frontier);
+                addToQueue(inkyPtr, Frontier, boardPtr);
+                break;
+            default:
+                break;
+       } 
+        //mark current index as visited
+        //now we go to next element in queue...however it is out of reach from current index. we should traverse back
+        //
+        //should go back to original index by checking the visited.
+        //visited should store address.
+        //go to next element in queue.
+        //recurse
+        
+        
+        //TODO: must fix this -> displayQueue(Frontier);
+        //TODO: track visited indexes to traverse back to origin if necessary 
          
     }
     displayQueue(Frontier);
@@ -253,7 +278,35 @@ int *swapGhostPacman(int *newLocation, int *pacmanPtr) {
 
 }
 
+void addToQueue(int *ghost, struct queue *q, int *boardPtr) {
+    enqueue(q, ghost - 1, findRow(boardPtr, ghost - 1), findColumn(boardPtr, ghost - 1)); //left
+    enqueue(q, ghost - 20, findRow(boardPtr, ghost - 20), findColumn(boardPtr, ghost - 20)); //up
+    enqueue(q, ghost + 1, findRow(boardPtr, ghost + 4), findColumn(boardPtr, ghost + 1)); //right
+    enqueue(q, ghost + 20, findRow(boardPtr, ghost + 20), findColumn(boardPtr, ghost + 20)); //down
+}
 
+int findRow(void *base_address, void *index_address) {
+    // Calculate the offset of the index address from the base address
+    ptrdiff_t offset = (char *)index_address - (char *)base_address;
 
+    // Compute the linear index
+    int linear_index = offset / sizeof(int);
 
+    // Calculate the row
+    int row = linear_index / COLUMNS;
+    return row;
+}
 
+// Function to find the column of an element
+int findColumn(void *base_address, void *index_address) {
+    // Calculate the offset of the index address from the base address
+    
+    ptrdiff_t offset = (char *)index_address - (char *)base_address;
+
+    // Compute the linear index
+    int linear_index = offset / sizeof(int);
+
+    // Calculate the column
+    int column = linear_index % COLUMNS;
+    return column;
+}
